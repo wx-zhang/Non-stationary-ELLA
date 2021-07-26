@@ -1,0 +1,11 @@
+random.seed(1)
+np.random.seed(1)
+T = 20
+angle = 20
+k = 3
+n_train = 100
+max_iter=100
+base_learner_kwargs = {'max_iter':10000}
+window = None
+feature_type = 'separate'
+Lam = 1e-8

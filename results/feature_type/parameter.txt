@@ -1,0 +1,9 @@
+random.seed(1)
+np.random.seed(1)
+T = 20
+angle = 20
+d = 70
+k = 3
+n_train = 100
+base_learner_kwargs = {'max_iter':10000}
+window = None

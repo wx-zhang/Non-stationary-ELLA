@@ -1,0 +1,14 @@
+!!python/object:argparse.Namespace
+# NS_ELLA_accp, use true transition
+dataset: synthetic
+data_style: classical
+
+d: 10
+k: 5
+
+T: 100
+true_p: True
+
+
+
+multi_init: False

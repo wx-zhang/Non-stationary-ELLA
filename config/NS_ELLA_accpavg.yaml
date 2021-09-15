@@ -1,0 +1,12 @@
+!!python/object:argparse.Namespace
+# NS_ELLA_accpavg, use true average transition and latent space
+dataset: synthetic
+data_style: classical
+
+d: 10
+k: 5
+
+T: 100
+true_pavg: True
+
+

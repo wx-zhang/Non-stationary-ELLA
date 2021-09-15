@@ -1,8 +1,9 @@
-import cv2
-import imutils
+from PIL import Image
+#import imutils
 import struct
 import numpy as np
 from utils.pca import PCA_feature
+
 
 
 def make_rotate_mnist_fig(T,angle,flatten=True,fixedn_train = None,fixedn_test = 1000,seed = None,angle0 = 0):
@@ -58,13 +59,22 @@ def make_rotate_mnist_fig(T,angle,flatten=True,fixedn_train = None,fixedn_test =
             n_test = Xte.shape[0]
 
         for j in range(n_train):
-            Xtr[j] = imutils.rotate(Xtr[j],angle =angle0 + angle*i)  
+            im = Image.fromarray(Xtr[j]) 
+            im = im.rotate(angle0 + angle*i)
+            #j<1 and im.show()
+            Xtr[j] = np.array(im)
+            #j<2 and print (Xtr[j])
+            #Xtr[j] = imutils.rotate(Xtr[j],angle =angle0 + angle*i)  
             # if i == T-1:
             #     cv2.imshow("Image", Xtr[j])
             #     cv2.waitKey (0)
           
         for j in range(n_test):
-            Xte[j] = imutils.rotate(Xte[j],angle=angle0 + angle*i)
+            #Xte[j] = imutils.rotate(Xte[j],angle=angle0 + angle*i)
+            im = Image.fromarray(Xte[j]) 
+            im = im.rotate(angle0 + angle*i)
+            #im.show()
+            Xte[j] = np.array(im)
         if flatten:
             Xtr = Xtr.reshape(n_train,-1)
             Xte = Xte.reshape(n_test,-1)
@@ -104,24 +114,30 @@ def make_meta_romnist_fig(T1,T2,stage1_train,stage2_train,angle,flatten=True,fix
 
 
 
-def prepare_mnist(Tl,angle,n_trainl,seed,feature_type,method='classical'):
-    # T, n_train are list for meta train
-    if method =='classical':
-        T = Tl
-        Xs_train,ys_train,Xs_test,ys_test = make_rotate_mnist_fig(T,angle,fixedn_train=n_trainl,seed=seed)
-    if method == 'meta':
-        Xs_train,ys_train,Xs_test,ys_test = make_meta_romnist_fig(Tl[0],Tl[1],n_trainl[0],n_trainl[1],angle,seed=seed)
-        T = sum(Tl)
+def prepare_mnist(args):
+    angle = 5
+    feature_type = 'separate'
+
+    if args.data_style =='classical':
+        T = args.T
+        n_train = args.n_train_classical
+        Xs_train,ys_train,Xs_test,ys_test = make_rotate_mnist_fig(T,angle,fixedn_train=n_train,seed=args.seed)
+    if args.data_style == 'meta':
+        t1 = args.T
+        t2 = args.T_meta
+        n1 = args.n_train_classical
+        n2 = args.n_train_meta
+        Xs_train,ys_train,Xs_test,ys_test = make_meta_romnist_fig(t1,t2,n1,n2,angle,seed=args.seed)
+        T = t1+t2
 
 
-    Xs_train_pca, Xs_test_pca = PCA_feature(Xs_train,Xs_test,feature_type,seed = seed)
+    Xs_train_pca, Xs_test_pca = PCA_feature(Xs_train,Xs_test,feature_type,seed = args.seed)
 
-    #print ('PCA feature done. Feature type: ' + feature_type )
     Xs_train_pca = [np.hstack([Xs_train_pca[i], np.ones((Xs_train_pca[i].shape[0],1))]) for i in range(T)]
     Xs_test_pca = [np.hstack([Xs_test_pca[i], np.ones((Xs_test_pca[i].shape[0],1))]) for i in range(T)]
     d = Xs_train_pca[0].shape[1]
 
-    #print ('Feature Dimension = ', d)
+
 
     return Xs_train_pca, ys_train, Xs_test_pca, ys_test, d
 

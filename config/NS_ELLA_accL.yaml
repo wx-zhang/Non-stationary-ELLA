@@ -1,0 +1,13 @@
+!!python/object:argparse.Namespace
+#NS_ELLA_accL, use true latent space
+
+dataset: synthetic
+data_style: classical
+
+d: 10
+k: 5
+
+T: 100
+true_L: True
+
+k_init: False

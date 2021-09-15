@@ -1,0 +1,14 @@
+!!python/object:argparse.Namespace
+# NS_ELLA_all, use true transition and latent space
+dataset: synthetic
+data_style: classical
+
+d: 10
+k: 5
+
+T: 100
+true_p: True
+true_L: True
+
+k_init: False
+multi_init: False

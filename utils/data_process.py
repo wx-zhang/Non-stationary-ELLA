@@ -3,8 +3,7 @@
 from sklearn.model_selection import train_test_split
 import numpy as np
 from scipy.stats import ortho_group
-import cv2
-import imutils
+
 
 def multi_task_train_test_split(Xs,Ys,train_size=0.5):
     Xs_train = []
@@ -32,6 +31,7 @@ def make_syncls(d,T,n_train,w_true,seed,train_split = 0.75 ,noise_var = .001):
     Xs = [np.hstack((np.random.randn(n,d-1), np.ones((n,1)))) for i in range(T)]
     # x = np.hstack((np.random.randn(n,d-1), np.ones((n,1))))
     # Xs = [x for i in range(T)]
+    # y = Xw
     Ys = [Xs[i].dot(w_true[:,i]) + noise_var*np.random.randn(n,) for i in range(T)]
     Xs_train, Xs_test, Ys_train, Ys_test = multi_task_train_test_split(Xs,Ys,train_size=n_train)
     Ys_binarized_train = [Ys_train[i] > 0 for i in range(T)]
@@ -47,25 +47,28 @@ def make_meta_syncls(d,Tl,n_trainl,w_true,seed):
     Ys_binarized_test = Ys_binarized_test1 + Ys_binarized_test2
     return Xs_train, Ys_binarized_train, Xs_test, Ys_binarized_test
 
-def prepare_syncls(seed, k,d,Tl,n_trainl,method='classical'): 
-    if isinstance(Tl,list):
-        T = sum(Tl)
+def prepare_syncls(args): 
+    if args.data_style == 'meta':
+        T = args.T + args.T_meta
     else:
-        T = Tl
+        T = args.T
+    k = args.k
+    d = args.d
+    seed = args.seed
     S_true = np.random.randn(k,T)
     L_true = np.random.randn(d,k)
     w_true = L_true@(S_true)
-    if method=='classical':
-        Xs_train, Ys_binarized_train, Xs_test, Ys_binarized_test = make_syncls(d,Tl,n_trainl,w_true,seed)
+    if args.data_style =='classical':
+        n_train = args.n_train_classical
+        Xs_train, Ys_binarized_train, Xs_test, Ys_binarized_test = make_syncls(d,T,n_train,w_true,seed)
 
-    if method == 'meta':
-        Xs_train, Ys_binarized_train, Xs_test, Ys_binarized_test = make_meta_syncls(d,Tl,n_trainl,w_true,seed)
+    if args.data_style == 'meta':
+        n_train_list = [args.n_train_classical, args.n_train_meta]
+        Xs_train, Ys_binarized_train, Xs_test, Ys_binarized_test = make_meta_syncls(d,T,n_train_list,w_true,seed)
 
     size = 2
     a,_ = np.float32(ortho_group.rvs(size=size, dim=d,random_state=seed))
-    #a = np.identity(d)
     Xs_train = make_non_stat_data(d, T, Xs_train,a)
-
     Xs_test = make_non_stat_data(d, T, Xs_test,a)
-    #print (Xs_train[-1][-1])
-    return Xs_train, Ys_binarized_train, Xs_test, Ys_binarized_test,a.T,L_true,S_true
+
+    return Xs_train, Ys_binarized_train, Xs_test, Ys_binarized_test,a.T,L_true

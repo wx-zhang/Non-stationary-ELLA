@@ -88,6 +88,7 @@ class base_classification(object):
 							  writer = self.writer)
 			for t in range(T_count):
 				model_ella.fit(self.Xs_train[t], self.ys_train[t], t)
+			for t in range(T_count):
 				acc.append(model_ella.score(self.Xs_test[t], self.ys_test[t], t))
 			acc_ella= self.measure(acc)
 			print (f'Seed:{self.seed}. Average accuracy: {acc_ella[-1]}')
@@ -110,7 +111,9 @@ class base_classification(object):
 
 			for t in range(T_count):
 				model_non_ella.fit(self.Xs_train[t], self.ys_train[t], t)
-				print (f'**task {t} train_acc: ', model_non_ella.score(self.Xs_train[t], self.ys_train[t], t))
+				if t > 5:
+					print (f'**task {t} train_acc: ', model_non_ella.score(self.Xs_train[t], self.ys_train[t], t))
+			for t in range(T_count):
 				acc.append(model_non_ella.score(self.Xs_test[t], self.ys_test[t], t))
 
 			acc_non_stat = self.measure(acc)
@@ -121,7 +124,7 @@ class base_classification(object):
 						tf.summary.scalar('avg_acc',acc_non_stat[t], step = t)
 						tf.summary.scalar('test_acc',acc[t], step = t)
 						tf.summary.scalar('train_acc',model_non_ella.score(self.Xs_train[t], self.ys_train[t], t), step = t)
-			print (acc)
+			# print (acc)
 			print (f'Seed:{self.seed}. Average accuracy: {acc_non_stat[-1]}')
 
 		return acc_log, acc_ella, acc_non_stat
